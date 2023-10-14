@@ -1,5 +1,5 @@
-### My Dream Girl here
 
+A Nintendo Nerd, now as a graduate student in Japan
 
 
 <!--
