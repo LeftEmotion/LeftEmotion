@@ -1,6 +1,7 @@
-A Nintendo Nerd, now as a graduate student in Japan
+Bachlor Jilin University, China Software Engineering
+Master Waseda University, Japan Information, Production and Systems
 
-
+A Nintendo Game Nerd, sometiomes code.
 <!--
 **LeftEmotion/LeftEmotion** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
