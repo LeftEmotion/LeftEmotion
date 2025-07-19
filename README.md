@@ -1,5 +1,6 @@
-Bachlor Jilin University, China Software Engineering
-Master Waseda University, Japan Information, Production and Systems
+Bachlor Jilin University, China
+
+Master Waseda University, Japan
 
 A Nintendo Game Nerd, sometiomes code.
 <!--
