@@ -1,4 +1,4 @@
-Bachlor Jilin University, China
+Bachelor Jilin University, China
 
 Master Waseda University, Japan
 
