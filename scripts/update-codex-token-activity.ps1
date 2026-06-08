@@ -20,23 +20,34 @@ function Escape-Svg {
     return [System.Security.SecurityElement]::Escape([string]$Value)
 }
 
-function Format-TokenWan {
+function Format-CompactToken {
     param([int64]$Value)
-    if ($Value -ge 10000) {
-        $formatted = ($Value / 10000.0).ToString("0.0", [System.Globalization.CultureInfo]::InvariantCulture)
+    if ($Value -ge 1000000) {
+        $formatted = ($Value / 1000000.0).ToString("0.0", [System.Globalization.CultureInfo]::InvariantCulture)
         $formatted = $formatted -replace "\.0$", ""
-        return "$formatted&#x4E07;"
+        return "${formatted}M"
+    }
+    if ($Value -ge 1000) {
+        $formatted = ($Value / 1000.0).ToString("0.0", [System.Globalization.CultureInfo]::InvariantCulture)
+        $formatted = $formatted -replace "\.0$", ""
+        return "${formatted}K"
     }
     return $Value.ToString("N0", [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
 function Format-DurationLabel {
     param([TimeSpan]$Duration)
-    if ($Duration.TotalMinutes -lt 1) { return "0 &#x5206;" }
+    if ($Duration.TotalMinutes -lt 1) { return "0m" }
     $hours = [int][Math]::Floor($Duration.TotalHours)
     $minutes = [int]$Duration.Minutes
-    if ($hours -gt 0) { return "$hours &#x5C0F;&#x65F6; $minutes &#x5206;" }
-    return "$minutes &#x5206;"
+    if ($hours -gt 0) { return "${hours}h ${minutes}m" }
+    return "${minutes}m"
+}
+
+function Format-DayLabel {
+    param([int]$Days)
+    if ($Days -eq 1) { return "1 day" }
+    return "$Days days"
 }
 
 function Get-ColorLevel {
@@ -183,11 +194,11 @@ function New-CodexActivitySvg {
     }
 
     $stats = @(
-        @{ Value = (Format-TokenWan $totalTokens); Label = "&#x7D2F;&#x8BA1; Token &#x6570;" },
-        @{ Value = (Format-TokenWan $peakTokens); Label = "&#x5CF0;&#x503C; Token &#x6570;" },
-        @{ Value = (Format-DurationLabel $longestDuration); Label = "&#x6700;&#x957F;&#x4EFB;&#x52A1;&#x65F6;&#x957F;" },
-        @{ Value = "$currentStreak &#x5929;"; Label = "&#x5F53;&#x524D;&#x8FDE;&#x7EED;&#x5929;&#x6570;" },
-        @{ Value = "$longestStreak &#x5929;"; Label = "&#x6700;&#x957F;&#x8FDE;&#x7EED;&#x5929;&#x6570;" }
+        @{ Value = (Format-CompactToken $totalTokens); Label = "Total Tokens" },
+        @{ Value = (Format-CompactToken $peakTokens); Label = "Peak Tokens" },
+        @{ Value = (Format-DurationLabel $longestDuration); Label = "Longest Task" },
+        @{ Value = (Format-DayLabel $currentStreak); Label = "Current Streak" },
+        @{ Value = (Format-DayLabel $longestStreak); Label = "Longest Streak" }
     )
 
     $maxDaily = if ($daily.Count -gt 0) { [int64](($daily.Values | Measure-Object -Maximum).Maximum) } else { 0 }
@@ -216,13 +227,14 @@ function New-CodexActivitySvg {
     }
 
     $monthLabels = New-Object System.Collections.Generic.List[string]
+    $monthNames = @("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
     $monthCursor = [datetime]::new($from.Year, $from.Month, 1)
     while ($monthCursor -le $today) {
         if ($monthCursor -ge $from.AddDays(14)) {
             $delta = [int]($monthCursor - $gridStart).TotalDays
             $col = [int][Math]::Floor($delta / 7)
             $x = $gridX + ($col * ($cell + $gap))
-            $label = "$($monthCursor.Month)&#x6708;"
+            $label = $monthNames[$monthCursor.Month - 1]
             $monthLabels.Add("<text x=""$x"" y=""354"" class=""month"">$label</text>")
         }
         $monthCursor = $monthCursor.AddMonths(1)
@@ -255,8 +267,7 @@ function New-CodexActivitySvg {
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; }
     .title { fill: #202124; font-size: 18px; font-weight: 700; }
-    .mode { fill: #1f2328; font-size: 16px; font-weight: 700; }
-    .mode-muted { fill: #8c8f94; font-size: 16px; font-weight: 600; }
+    .pill-text { fill: #1769c2; font-size: 14px; font-weight: 700; }
     .stat-value { fill: #1f2328; font-size: 18px; font-weight: 500; }
     .stat-label { fill: #6f7378; font-size: 17px; }
     .month { fill: #8c8f94; font-size: 15px; }
@@ -265,10 +276,10 @@ function New-CodexActivitySvg {
   <rect width="1140" height="380" fill="#ffffff"/>
   <rect x="112" y="32" width="916" height="76" rx="18" fill="#ffffff" stroke="#eeeeee"/>
   $statMarkup
-  <text x="112" y="178" class="title">Token &#x6D3B;&#x52A8;</text>
-  <text x="892" y="177" class="mode">&#x6BCF;&#x65E5;</text>
-  <text x="944" y="177" class="mode-muted">&#x6BCF;&#x5468;</text>
-  <text x="995" y="177" class="mode-muted">&#x7D2F;&#x8BA1;</text>
+  <text x="112" y="178" class="title">Token Activity</text>
+  <rect x="916" y="152" width="112" height="34" rx="17" fill="#f3f9ff" stroke="#d7eaff"/>
+  <circle cx="938" cy="169" r="4" fill="#1688f8"/>
+  <text x="959" y="174" class="pill-text">Daily</text>
   $rectMarkup
   $monthMarkup
   <text x="112" y="374" class="updated">Updated $updated from local Codex token_count events.</text>
