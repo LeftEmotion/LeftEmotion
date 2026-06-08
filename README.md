@@ -1,8 +1,8 @@
-Bachelor Jilin University, China
+Bachelor's degree, Jilin University, China
 
-Master Waseda University, Japan
+Master's degree, Waseda University, Japan
 
-A Nintendo Game Nerd, sometiomes code.
+A Nintendo game nerd who sometimes codes.
 
 ## Codex Token Activity
 
