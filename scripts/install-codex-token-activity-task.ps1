@@ -1,7 +1,7 @@
 param(
     [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
     [string]$TaskName = "CodexTokenActivityProfileUpdate",
-    [int]$EveryMinutes = 60
+    [string]$At = "17:00"
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,8 +18,8 @@ if (-not (Test-Path $runnerScript)) {
 
 $taskCommand = "`"$runnerScript`""
 
-schtasks.exe /Create /F /SC MINUTE /MO $EveryMinutes /TN $TaskName /TR $taskCommand | Out-Host
+schtasks.exe /Create /F /SC DAILY /ST $At /TN $TaskName /TR $taskCommand | Out-Host
 if ($LASTEXITCODE -ne 0) {
     throw "Failed to install scheduled task '$TaskName'."
 }
-Write-Host "Installed scheduled task '$TaskName' to update every $EveryMinutes minutes."
+Write-Host "Installed scheduled task '$TaskName' to update daily at $At."
