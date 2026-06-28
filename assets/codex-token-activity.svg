@@ -33,7 +33,7 @@
 <rect x="112" y="236" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-06-25: 0 tokens</title></rect>
 <rect x="112" y="255" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-06-26: 0 tokens</title></rect>
 <rect x="112" y="274" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-06-27: 0 tokens</title></rect>
-<rect x="112" y="293" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-06-28: 0 tokens</title></rect>
+<rect x="112" y="293" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-06-28: 0 tokens</title></rect>
 <rect x="112" y="312" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-06-29: 0 tokens</title></rect>
 <rect x="131" y="198" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-06-30: 0 tokens</title></rect>
 <rect x="131" y="217" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-01: 0 tokens</title></rect>
@@ -398,6 +398,7 @@
 <rect x="1100" y="255" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-06-25: 0 tokens</title></rect>
 <rect x="1100" y="274" width="14" height="14" rx="4" fill="#1688f8" opacity="1"><title>2026-06-26: 2,505,137 tokens</title></rect>
 <rect x="1100" y="293" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-06-27: 0 tokens</title></rect>
+<rect x="1100" y="312" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-06-28: 0 tokens</title></rect>
   <text x="207" y="354" class="month">Aug</text>
 <text x="302" y="354" class="month">Sep</text>
 <text x="378" y="354" class="month">Oct</text>
@@ -409,5 +410,5 @@
 <text x="872" y="354" class="month">Apr</text>
 <text x="948" y="354" class="month">May</text>
 <text x="1043" y="354" class="month">Jun</text>
-  <text x="112" y="374" class="updated">Updated 2026-06-27 17:00 JST from local Codex token_count events.</text>
+  <text x="112" y="374" class="updated">Updated 2026-06-28 17:00 JST from local Codex token_count events.</text>
 </svg>
