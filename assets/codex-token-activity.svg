@@ -10,7 +10,7 @@
   </style>
   <rect width="1140" height="380" fill="#ffffff"/>
   <rect x="112" y="32" width="916" height="76" rx="18" fill="#ffffff" stroke="#eeeeee"/>
-  <text x="203.6" y="66" text-anchor="middle" class="stat-value">66.2M</text>
+  <text x="203.6" y="66" text-anchor="middle" class="stat-value">70.4M</text>
 <text x="203.6" y="91" text-anchor="middle" class="stat-label">Total Tokens</text>
 <text x="386.8" y="66" text-anchor="middle" class="stat-value">12.8M</text>
 <text x="386.8" y="91" text-anchor="middle" class="stat-label">Peak Tokens</text>
@@ -18,7 +18,7 @@
 <text x="570" y="66" text-anchor="middle" class="stat-value">1h 41m</text>
 <text x="570" y="91" text-anchor="middle" class="stat-label">Longest Task</text>
 <line x1="478.4" y1="48" x2="478.4" y2="92" stroke="#eeeeee"/>
-<text x="753.2" y="66" text-anchor="middle" class="stat-value">1 day</text>
+<text x="753.2" y="66" text-anchor="middle" class="stat-value">0 days</text>
 <text x="753.2" y="91" text-anchor="middle" class="stat-label">Current Streak</text>
 <line x1="661.6" y1="48" x2="661.6" y2="92" stroke="#eeeeee"/>
 <text x="936.4" y="66" text-anchor="middle" class="stat-value">3 days</text>
@@ -28,8 +28,8 @@
   <rect x="916" y="152" width="112" height="34" rx="17" fill="#f3f9ff" stroke="#d7eaff"/>
   <circle cx="938" cy="169" r="4" fill="#1688f8"/>
   <text x="959" y="174" class="pill-text">Daily</text>
-  <rect x="112" y="198" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-07: 0 tokens</title></rect>
-<rect x="112" y="217" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-08: 0 tokens</title></rect>
+  <rect x="112" y="198" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-07-07: 0 tokens</title></rect>
+<rect x="112" y="217" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-07-08: 0 tokens</title></rect>
 <rect x="112" y="236" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-09: 0 tokens</title></rect>
 <rect x="112" y="255" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-10: 0 tokens</title></rect>
 <rect x="112" y="274" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-11: 0 tokens</title></rect>
@@ -392,7 +392,9 @@
 <rect x="1081" y="274" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-07-03: 0 tokens</title></rect>
 <rect x="1081" y="293" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-07-04: 0 tokens</title></rect>
 <rect x="1081" y="312" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-07-05: 0 tokens</title></rect>
-<rect x="1100" y="198" width="14" height="14" rx="4" fill="#1688f8" opacity="1"><title>2026-07-06: 1,383,312 tokens</title></rect>
+<rect x="1100" y="198" width="14" height="14" rx="4" fill="#1688f8" opacity="1"><title>2026-07-06: 3,272,631 tokens</title></rect>
+<rect x="1100" y="217" width="14" height="14" rx="4" fill="#1688f8" opacity="1"><title>2026-07-07: 2,308,451 tokens</title></rect>
+<rect x="1100" y="236" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-07-08: 0 tokens</title></rect>
   <text x="169" y="354" class="month">Aug</text>
 <text x="264" y="354" class="month">Sep</text>
 <text x="340" y="354" class="month">Oct</text>
@@ -405,5 +407,5 @@
 <text x="910" y="354" class="month">May</text>
 <text x="1005" y="354" class="month">Jun</text>
 <text x="1081" y="354" class="month">Jul</text>
-  <text x="112" y="374" class="updated">Updated 2026-07-06 18:02 JST from local Codex token_count events.</text>
+  <text x="112" y="374" class="updated">Updated 2026-07-08 17:00 JST from local Codex token_count events.</text>
 </svg>
