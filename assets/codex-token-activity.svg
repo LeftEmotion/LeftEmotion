@@ -30,8 +30,8 @@
   <text x="959" y="174" class="pill-text">Daily</text>
   <rect x="112" y="198" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-07-07: 0 tokens</title></rect>
 <rect x="112" y="217" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-07-08: 0 tokens</title></rect>
-<rect x="112" y="236" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-09: 0 tokens</title></rect>
-<rect x="112" y="255" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-10: 0 tokens</title></rect>
+<rect x="112" y="236" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-07-09: 0 tokens</title></rect>
+<rect x="112" y="255" width="14" height="14" rx="4" fill="#f1f1f1" opacity="0"><title>2025-07-10: 0 tokens</title></rect>
 <rect x="112" y="274" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-11: 0 tokens</title></rect>
 <rect x="112" y="293" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-12: 0 tokens</title></rect>
 <rect x="112" y="312" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2025-07-13: 0 tokens</title></rect>
@@ -395,6 +395,8 @@
 <rect x="1100" y="198" width="14" height="14" rx="4" fill="#1688f8" opacity="1"><title>2026-07-06: 3,272,631 tokens</title></rect>
 <rect x="1100" y="217" width="14" height="14" rx="4" fill="#1688f8" opacity="1"><title>2026-07-07: 2,308,451 tokens</title></rect>
 <rect x="1100" y="236" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-07-08: 0 tokens</title></rect>
+<rect x="1100" y="255" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-07-09: 0 tokens</title></rect>
+<rect x="1100" y="274" width="14" height="14" rx="4" fill="#f1f1f1" opacity="1"><title>2026-07-10: 0 tokens</title></rect>
   <text x="169" y="354" class="month">Aug</text>
 <text x="264" y="354" class="month">Sep</text>
 <text x="340" y="354" class="month">Oct</text>
@@ -407,5 +409,5 @@
 <text x="910" y="354" class="month">May</text>
 <text x="1005" y="354" class="month">Jun</text>
 <text x="1081" y="354" class="month">Jul</text>
-  <text x="112" y="374" class="updated">Updated 2026-07-08 17:00 JST from local Codex token_count events.</text>
+  <text x="112" y="374" class="updated">Updated 2026-07-10 02:24 JST from local Codex token_count events.</text>
 </svg>
