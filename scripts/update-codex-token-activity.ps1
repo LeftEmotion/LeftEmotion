@@ -2,8 +2,6 @@ param(
     [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
     [string]$CodexRoot = (Join-Path $env:USERPROFILE ".codex"),
     [string]$Branch = "main",
-    [int]$Days = 365,
-    [int]$ActiveGapMinutes = 60,
     [switch]$Push
 )
 
@@ -33,32 +31,6 @@ function Format-CompactToken {
         return "${formatted}K"
     }
     return $Value.ToString("N0", [System.Globalization.CultureInfo]::InvariantCulture)
-}
-
-function Format-DurationLabel {
-    param([TimeSpan]$Duration)
-    if ($Duration.TotalMinutes -lt 1) { return "0m" }
-    $hours = [int][Math]::Floor($Duration.TotalHours)
-    $minutes = [int]$Duration.Minutes
-    if ($hours -gt 0) { return "${hours}h ${minutes}m" }
-    return "${minutes}m"
-}
-
-function Format-DayLabel {
-    param([int]$Days)
-    if ($Days -eq 1) { return "1 day" }
-    return "$Days days"
-}
-
-function Get-ColorLevel {
-    param([int64]$Value, [int64]$MaxValue)
-    if ($Value -le 0 -or $MaxValue -le 0) { return "#f1f1f1" }
-    $ratio = [Math]::Log10($Value + 1) / [Math]::Log10($MaxValue + 1)
-    if ($ratio -lt 0.22) { return "#dceeff" }
-    if ($ratio -lt 0.42) { return "#badfff" }
-    if ($ratio -lt 0.62) { return "#8bc8ff" }
-    if ($ratio -lt 0.82) { return "#4aa6ff" }
-    return "#1688f8"
 }
 
 function Read-CodexTokenEvents {
@@ -117,172 +89,103 @@ function Read-CodexTokenEvents {
 function New-CodexActivitySvg {
     param(
         [object[]]$Events,
-        [int]$Days,
-        [datetime]$Now
+        [datetime]$Now,
+        [ValidateSet("light", "dark")][string]$Theme = "light"
     )
 
     $tz = [System.TimeZoneInfo]::FindSystemTimeZoneById("Tokyo Standard Time")
-    $localEvents = foreach ($event in $Events) {
-        $localTime = [System.TimeZoneInfo]::ConvertTimeFromUtc($event.Timestamp, $tz)
-        [pscustomobject]@{
-            Date = $localTime.Date
-            Timestamp = $localTime
-            Session = $event.Session
-            Total = $event.Total
-            Output = $event.Output
-            Reasoning = $event.Reasoning
-        }
-    }
-
+    $culture = [System.Globalization.CultureInfo]::InvariantCulture
     $today = $Now.Date
-    $from = $today.AddDays(-($Days - 1))
+    # A rolling six-calendar-month interval, including today, in Japan time.
+    $from = $today.AddMonths(-6).AddDays(1)
     $daily = @{}
-    foreach ($group in ($localEvents | Where-Object { $_.Date -ge $from -and $_.Date -le $today } | Group-Object { $_.Date.ToString("yyyy-MM-dd") })) {
-        $sum = ($group.Group | Measure-Object Total -Sum).Sum
-        $daily[$group.Name] = [int64]$sum
+    foreach ($event in $Events) {
+        $date = [System.TimeZoneInfo]::ConvertTimeFromUtc($event.Timestamp, $tz).Date
+        if ($date -lt $from -or $date -gt $today) { continue }
+        $key = $date.ToString("yyyy-MM-dd")
+        $daily[$key] = [int64]$daily[$key] + [int64]$event.Total
+    }
+    $totalTokens = [int64](($daily.Values | Measure-Object -Sum).Sum)
+
+    # Quartiles of active days keep the four shades useful even with a large peak.
+    $positive = @($daily.Values | Where-Object { $_ -gt 0 } | Sort-Object)
+    $thresholds = @(foreach ($fraction in @(0.25, 0.5, 0.75)) {
+        if ($positive.Count -gt 0) {
+            $positive[[int][Math]::Ceiling($positive.Count * $fraction) - 1]
+        } else { 0 }
+    })
+    $palette = @("#eff2f5", "#9be9a8", "#40c463", "#30a14e", "#216e39")
+    $background = "#ffffff"; $border = "#d1d9e0"; $foreground = "#1f2328"; $muted = "#59636e"
+    if ($Theme -eq "dark") {
+        $palette = @("#151b23", "#033a16", "#196c2e", "#2ea043", "#56d364")
+        $background = "#0d1117"; $border = "#3d444d"; $foreground = "#f0f6fc"; $muted = "#9198a1"
     }
 
-    $totalTokens = [int64](($localEvents | Measure-Object Total -Sum).Sum)
-    $peakTokens = if ($daily.Count -gt 0) { [int64](($daily.Values | Measure-Object -Maximum).Maximum) } else { 0 }
-
-    $activeGap = New-TimeSpan -Minutes $ActiveGapMinutes
-    $sessionDurations = foreach ($sessionGroup in ($localEvents | Group-Object Session)) {
-        $times = $sessionGroup.Group | Sort-Object Timestamp
-        if ($times.Count -gt 0) {
-            $segmentStart = $times[0].Timestamp
-            $previous = $times[0].Timestamp
-            for ($i = 1; $i -lt $times.Count; $i++) {
-                $current = $times[$i].Timestamp
-                if (($current - $previous) -gt $activeGap) {
-                    New-TimeSpan -Start $segmentStart -End $previous
-                    $segmentStart = $current
-                }
-                $previous = $current
-            }
-            New-TimeSpan -Start $segmentStart -End $previous
-        }
-    }
-    $longestDuration = if ($sessionDurations) {
-        $sessionDurations | Sort-Object TotalSeconds -Descending | Select-Object -First 1
-    } else {
-        New-TimeSpan -Minutes 0
-    }
-
-    $activeDates = @{}
-    foreach ($key in $daily.Keys) {
-        if ($daily[$key] -gt 0) { $activeDates[$key] = $true }
-    }
-
-    $currentStreak = 0
-    $cursor = $today
-    while ($activeDates.ContainsKey($cursor.ToString("yyyy-MM-dd"))) {
-        $currentStreak++
-        $cursor = $cursor.AddDays(-1)
-    }
-
-    $longestStreak = 0
-    $runningStreak = 0
-    $scan = $from
-    while ($scan -le $today) {
-        if ($activeDates.ContainsKey($scan.ToString("yyyy-MM-dd"))) {
-            $runningStreak++
-            if ($runningStreak -gt $longestStreak) { $longestStreak = $runningStreak }
-        } else {
-            $runningStreak = 0
-        }
-        $scan = $scan.AddDays(1)
-    }
-
-    $stats = @(
-        @{ Value = (Format-CompactToken $totalTokens); Label = "Total Tokens" },
-        @{ Value = (Format-CompactToken $peakTokens); Label = "Peak Tokens" },
-        @{ Value = (Format-DurationLabel $longestDuration); Label = "Longest Task" },
-        @{ Value = (Format-DayLabel $currentStreak); Label = "Current Streak" },
-        @{ Value = (Format-DayLabel $longestStreak); Label = "Longest Streak" }
-    )
-
-    $maxDaily = if ($daily.Count -gt 0) { [int64](($daily.Values | Measure-Object -Maximum).Maximum) } else { 0 }
-    $startOffset = (([int]$from.DayOfWeek + 6) % 7)
-    $gridStart = $from.AddDays(-$startOffset)
-    $cell = 14
-    $gap = 5
-    $gridX = 112
-    $gridY = 198
-
+    # GitHub's calendar starts each column on Sunday. Padding is never data.
+    $gridStart = $from.AddDays(-[int]$from.DayOfWeek)
+    $cell = 18; $pitch = 23; $gridX = 52; $gridY = 80
+    $weeks = [int][Math]::Floor(($today - $gridStart).TotalDays / 7) + 1
+    $width = $gridX + $weeks * $pitch - ($pitch - $cell) + 24
+    $right = $width - 24
     $rects = New-Object System.Collections.Generic.List[string]
-    $dateCursor = $gridStart
-    while ($dateCursor -le $today) {
-        $delta = [int]($dateCursor - $gridStart).TotalDays
+    $monthLabels = New-Object System.Collections.Generic.List[string]
+    $lastLabelCol = -10
+    for ($date = $from; $date -le $today; $date = $date.AddDays(1)) {
+        $delta = [int]($date - $gridStart).TotalDays
         $col = [int][Math]::Floor($delta / 7)
         $row = $delta % 7
-        $x = $gridX + ($col * ($cell + $gap))
-        $y = $gridY + ($row * ($cell + $gap))
-        $dateKey = $dateCursor.ToString("yyyy-MM-dd")
-        $value = if ($daily.ContainsKey($dateKey)) { $daily[$dateKey] } else { 0 }
-        $color = Get-ColorLevel -Value $value -MaxValue $maxDaily
-        $opacity = if ($dateCursor -lt $from) { "0" } else { "1" }
-        $title = "$dateKey`: $($value.ToString("N0", [System.Globalization.CultureInfo]::InvariantCulture)) tokens"
-        $rects.Add("<rect x=""$x"" y=""$y"" width=""$cell"" height=""$cell"" rx=""4"" fill=""$color"" opacity=""$opacity""><title>$(Escape-Svg $title)</title></rect>")
-        $dateCursor = $dateCursor.AddDays(1)
-    }
-
-    $monthLabels = New-Object System.Collections.Generic.List[string]
-    $monthNames = @("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
-    $monthCursor = [datetime]::new($from.Year, $from.Month, 1)
-    while ($monthCursor -le $today) {
-        if ($monthCursor -ge $from.AddDays(14)) {
-            $delta = [int]($monthCursor - $gridStart).TotalDays
-            $col = [int][Math]::Floor($delta / 7)
-            $x = $gridX + ($col * ($cell + $gap))
-            $label = $monthNames[$monthCursor.Month - 1]
-            $monthLabels.Add("<text x=""$x"" y=""354"" class=""month"">$label</text>")
+        $x = $gridX + $col * $pitch
+        $y = $gridY + $row * $pitch
+        $key = $date.ToString("yyyy-MM-dd")
+        $value = if ($daily.ContainsKey($key)) { [int64]$daily[$key] } else { 0 }
+        $level = 0
+        if ($value -gt 0) {
+            $level = 1
+            foreach ($threshold in $thresholds) { if ($value -gt $threshold) { $level++ } }
         }
-        $monthCursor = $monthCursor.AddMonths(1)
-    }
-
-    $statBlocks = New-Object System.Collections.Generic.List[string]
-    $cardX = 112
-    $cardY = 32
-    $cardW = 916
-    $slotW = $cardW / 5
-    for ($i = 0; $i -lt $stats.Count; $i++) {
-        $centerX = $cardX + ($slotW * $i) + ($slotW / 2)
-        $value = $stats[$i].Value
-        $label = $stats[$i].Label
-        $statBlocks.Add("<text x=""$centerX"" y=""66"" text-anchor=""middle"" class=""stat-value"">$value</text>")
-        $statBlocks.Add("<text x=""$centerX"" y=""91"" text-anchor=""middle"" class=""stat-label"">$label</text>")
-        if ($i -gt 0) {
-            $lineX = $cardX + ($slotW * $i)
-            $statBlocks.Add("<line x1=""$lineX"" y1=""48"" x2=""$lineX"" y2=""92"" stroke=""#eeeeee""/>")
+        $color = $palette[$level]
+        $title = "$key`: $($value.ToString('N0', $culture)) tokens"
+        $rects.Add("<rect class=""day"" data-date=""$key"" data-tokens=""$value"" x=""$x"" y=""$y"" width=""$cell"" height=""$cell"" rx=""3"" fill=""$color""><title>$(Escape-Svg $title)</title></rect>")
+        if (($date -eq $from -or $date.Day -eq 1) -and ($col - $lastLabelCol -ge 2)) {
+            $monthLabels.Add("<text x=""$x"" y=""67"" class=""label"">$($date.ToString('MMM', $culture))</text>")
+            $lastLabelCol = $col
         }
     }
-
-    $updated = $Now.ToString("yyyy-MM-dd HH:mm 'JST'")
-    $rectMarkup = $rects -join "`n"
-    $monthMarkup = $monthLabels -join "`n"
-    $statMarkup = $statBlocks -join "`n"
-
+    $weekLabels = New-Object System.Collections.Generic.List[string]
+    foreach ($row in @(1, 3, 5)) {
+        $y = $gridY + $row * $pitch + 13
+        $label = @("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")[$row]
+        $weekLabels.Add("<text x=""20"" y=""$y"" class=""label"">$label</text>")
+    }
+    $legend = New-Object System.Collections.Generic.List[string]
+    $legendX = $right - 119
+    for ($i = 0; $i -lt $palette.Count; $i++) {
+        $x = $legendX + $i * 17
+        $legend.Add("<rect x=""$x"" y=""251"" width=""13"" height=""13"" rx=""2"" class=""day"" fill=""$($palette[$i])""/>")
+    }
+    $lessX = $legendX - 10
+    $range = "$($from.ToString('MMM d, yyyy', $culture)) - $($today.ToString('MMM d, yyyy', $culture))"
+    $summary = "$(Format-CompactToken $totalTokens) tokens in the last 6 months"
+    $description = "$($totalTokens.ToString('N0', $culture)) tokens from $range (JST). Each square represents one day; darker green means more tokens in light mode, brighter green in dark mode."
     return @"
-<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="380" viewBox="0 0 1140 380" role="img" aria-label="Codex Token Activity">
+<svg xmlns="http://www.w3.org/2000/svg" width="$width" height="284" viewBox="0 0 $width 284" role="img" aria-labelledby="activity-title activity-description">
+  <title id="activity-title">Codex Token Activity - last 6 months</title>
+  <desc id="activity-description">$(Escape-Svg $description)</desc>
   <style>
-    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif; }
-    .title { fill: #202124; font-size: 18px; font-weight: 700; }
-    .pill-text { fill: #1769c2; font-size: 14px; font-weight: 700; }
-    .stat-value { fill: #1f2328; font-size: 18px; font-weight: 500; }
-    .stat-label { fill: #6f7378; font-size: 17px; }
-    .month { fill: #8c8f94; font-size: 15px; }
-    .updated { fill: #9aa0a6; font-size: 12px; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+    .summary { fill: $foreground; font-size: 16px; font-weight: 600; }
+    .label, .footer { fill: $muted; font-size: 12px; }
+    .day { stroke: $foreground; stroke-opacity: 0.06; stroke-width: 1; }
   </style>
-  <rect width="1140" height="380" fill="#ffffff"/>
-  <rect x="112" y="32" width="916" height="76" rx="18" fill="#ffffff" stroke="#eeeeee"/>
-  $statMarkup
-  <text x="112" y="178" class="title">Token Activity</text>
-  <rect x="916" y="152" width="112" height="34" rx="17" fill="#f3f9ff" stroke="#d7eaff"/>
-  <circle cx="938" cy="169" r="4" fill="#1688f8"/>
-  <text x="959" y="174" class="pill-text">Daily</text>
-  $rectMarkup
-  $monthMarkup
-  <text x="112" y="374" class="updated">Updated $updated from local Codex token_count events.</text>
+  <rect x="0.5" y="0.5" width="$($width - 1)" height="283" rx="6" fill="$background" stroke="$border"/>
+  <text x="24" y="34" class="summary">$summary</text>
+  $($monthLabels -join "`n  ")
+  $($weekLabels -join "`n  ")
+  $($rects -join "`n  ")
+  <text x="24" y="262" class="footer">$range / JST</text>
+  <text x="$lessX" y="262" text-anchor="end" class="footer">Less</text>
+  $($legend -join "`n  ")
+  <text x="$right" y="262" text-anchor="end" class="footer">More</text>
 </svg>
 "@
 }
@@ -291,25 +194,30 @@ $repoRoot = (Resolve-Path $RepoRoot).Path
 $assetsDir = Join-Path $repoRoot "assets"
 $readmePath = Join-Path $repoRoot "README.md"
 $svgPath = Join-Path $assetsDir "codex-token-activity.svg"
+$darkSvgPath = Join-Path $assetsDir "codex-token-activity-dark.svg"
 
 New-Item -ItemType Directory -Force -Path $assetsDir | Out-Null
 
 if ($Push) {
     git -C $repoRoot pull --ff-only origin $Branch
+    if ($LASTEXITCODE -ne 0) { throw "Cannot update: git pull failed." }
 }
 
 $events = @(Read-CodexTokenEvents -Root $CodexRoot)
 $tz = [System.TimeZoneInfo]::FindSystemTimeZoneById("Tokyo Standard Time")
 $now = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $tz)
-$svg = New-CodexActivitySvg -Events $events -Days $Days -Now $now
+$svg = New-CodexActivitySvg -Events $events -Now $now
 Write-Utf8NoBom -Path $svgPath -Content $svg
+Write-Utf8NoBom -Path $darkSvgPath -Content (New-CodexActivitySvg -Events $events -Now $now -Theme dark)
 
 $readme = [System.IO.File]::ReadAllText($readmePath, [System.Text.Encoding]::UTF8)
 $block = @"
 <!-- CODEX-TOKEN-ACTIVITY:START -->
-![Codex Token Activity](assets/codex-token-activity.svg)
-
-Updated automatically by ``scripts/update-codex-token-activity.ps1``.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/codex-token-activity-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/codex-token-activity.svg">
+  <img alt="Codex token activity over the last six months" src="assets/codex-token-activity.svg">
+</picture>
 <!-- CODEX-TOKEN-ACTIVITY:END -->
 "@
 
@@ -322,10 +230,14 @@ if ([regex]::IsMatch($readme, $pattern)) {
 Write-Utf8NoBom -Path $readmePath -Content $readme
 
 if ($Push) {
-    git -C $repoRoot add README.md assets/codex-token-activity.svg
-    $changes = git -C $repoRoot status --short
-    if ($changes) {
-        git -C $repoRoot commit -m "Update Codex token activity graphic"
-        git -C $repoRoot push origin $Branch
-    }
+    $generated = @("README.md", "assets/codex-token-activity.svg", "assets/codex-token-activity-dark.svg")
+    git -C $repoRoot add -- $generated
+    if ($LASTEXITCODE -ne 0) { throw "Cannot stage activity files." }
+    git -C $repoRoot diff --cached --quiet -- $generated
+    if ($LASTEXITCODE -eq 1) {
+        git -C $repoRoot commit -m "Update Codex token activity graphic" -- $generated
+        if ($LASTEXITCODE -ne 0) { throw "Cannot commit activity files." }
+    } elseif ($LASTEXITCODE -ne 0) { throw "Cannot inspect activity changes." }
+    git -C $repoRoot push origin $Branch
+    if ($LASTEXITCODE -ne 0) { throw "Cannot push activity update." }
 }

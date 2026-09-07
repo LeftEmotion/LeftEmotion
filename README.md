@@ -7,9 +7,11 @@ A Nintendo game nerd who sometimes codes.
 ## Codex Token Activity
 
 <!-- CODEX-TOKEN-ACTIVITY:START -->
-![Codex Token Activity](assets/codex-token-activity.svg)
-
-Updated automatically by `scripts/update-codex-token-activity.ps1`.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/codex-token-activity-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/codex-token-activity.svg">
+  <img alt="Codex token activity over the last six months" src="assets/codex-token-activity.svg">
+</picture>
 <!-- CODEX-TOKEN-ACTIVITY:END -->
 <!--
 **LeftEmotion/LeftEmotion** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
