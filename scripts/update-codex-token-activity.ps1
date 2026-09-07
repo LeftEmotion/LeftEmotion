@@ -18,21 +18,6 @@ function Escape-Svg {
     return [System.Security.SecurityElement]::Escape([string]$Value)
 }
 
-function Format-CompactToken {
-    param([int64]$Value)
-    if ($Value -ge 1000000) {
-        $formatted = ($Value / 1000000.0).ToString("0.0", [System.Globalization.CultureInfo]::InvariantCulture)
-        $formatted = $formatted -replace "\.0$", ""
-        return "${formatted}M"
-    }
-    if ($Value -ge 1000) {
-        $formatted = ($Value / 1000.0).ToString("0.0", [System.Globalization.CultureInfo]::InvariantCulture)
-        $formatted = $formatted -replace "\.0$", ""
-        return "${formatted}K"
-    }
-    return $Value.ToString("N0", [System.Globalization.CultureInfo]::InvariantCulture)
-}
-
 function Read-CodexTokenEvents {
     param([string]$Root)
 
@@ -105,7 +90,6 @@ function New-CodexActivitySvg {
         $key = $date.ToString("yyyy-MM-dd")
         $daily[$key] = [int64]$daily[$key] + [int64]$event.Total
     }
-    $totalTokens = [int64](($daily.Values | Measure-Object -Sum).Sum)
 
     # Quartiles of active days keep the four shades useful even with a large peak.
     $positive = @($daily.Values | Where-Object { $_ -gt 0 } | Sort-Object)
@@ -144,8 +128,9 @@ function New-CodexActivitySvg {
             foreach ($threshold in $thresholds) { if ($value -gt $threshold) { $level++ } }
         }
         $color = $palette[$level]
-        $title = "$key`: $($value.ToString('N0', $culture)) tokens"
-        $rects.Add("<rect class=""day"" data-date=""$key"" data-tokens=""$value"" x=""$x"" y=""$y"" width=""$cell"" height=""$cell"" rx=""3"" fill=""$color""><title>$(Escape-Svg $title)</title></rect>")
+        $activityLabel = @("No activity", "Low activity", "Moderate activity", "High activity", "Very high activity")[$level]
+        $title = "$key`: $activityLabel"
+        $rects.Add("<rect class=""day"" data-date=""$key"" x=""$x"" y=""$y"" width=""$cell"" height=""$cell"" rx=""3"" fill=""$color""><title>$(Escape-Svg $title)</title></rect>")
         if (($date -eq $from -or $date.Day -eq 1) -and ($col - $lastLabelCol -ge 2)) {
             $monthLabels.Add("<text x=""$x"" y=""67"" class=""label"">$($date.ToString('MMM', $culture))</text>")
             $lastLabelCol = $col
@@ -165,11 +150,11 @@ function New-CodexActivitySvg {
     }
     $lessX = $legendX - 10
     $range = "$($from.ToString('MMM d, yyyy', $culture)) - $($today.ToString('MMM d, yyyy', $culture))"
-    $summary = "$(Format-CompactToken $totalTokens) tokens in the last 6 months"
-    $description = "$($totalTokens.ToString('N0', $culture)) tokens from $range (JST). Each square represents one day; darker green means more tokens in light mode, brighter green in dark mode."
+    $summary = "Token activity over the last six months"
+    $description = "Activity from $range (JST). Each square represents one day; darker green means more activity in light mode, brighter green in dark mode."
     return @"
 <svg xmlns="http://www.w3.org/2000/svg" width="$width" height="284" viewBox="0 0 $width 284" role="img" aria-labelledby="activity-title activity-description">
-  <title id="activity-title">Codex Token Activity - last 6 months</title>
+  <title id="activity-title">Codex Token Activity - last six months</title>
   <desc id="activity-description">$(Escape-Svg $description)</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }

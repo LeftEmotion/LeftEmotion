@@ -28,14 +28,17 @@ $days = Get-Days $light
 Assert-True ($days.Count -eq 184) 'Expected 184 days in this six-month interval.'
 Assert-True ($days[0].GetAttribute('data-date') -eq '2026-03-08') 'Incorrect first date.'
 Assert-True ($days[-1].GetAttribute('data-date') -eq '2026-09-07') 'Incorrect last date.'
-$sum = ($days | ForEach-Object { [int64]$_.GetAttribute('data-tokens') } | Measure-Object -Sum).Sum
-Assert-True ($sum -eq 1000) 'Out-of-range events leaked into the total.'
-Assert-True ($light.OuterXml.Contains('1K tokens in the last 6 months')) 'Summary must match the grid.'
-$colors = @($days | Where-Object { [int64]$_.GetAttribute('data-tokens') -gt 0 } | ForEach-Object { $_.GetAttribute('fill') } | Sort-Object -Unique)
+[xml]$inRangeOnly = New-CodexActivitySvg -Events $events[1..4] -Now $now
+Assert-True ($light.OuterXml -eq $inRangeOnly.OuterXml) 'Out-of-range events must not change the graph or color thresholds.'
+foreach ($svg in @($light, $dark)) {
+    Assert-True (-not $svg.OuterXml.Contains('data-tokens')) 'Do not embed exact usage in SVG attributes.'
+    Assert-True ($svg.InnerText -notmatch '\d[\d,.]*[KM]?\s+tokens') 'Do not disclose numeric token usage in text or descriptions.'
+}
+$colors = @($days | Where-Object { $_.GetAttribute('fill') -ne '#eff2f5' } | ForEach-Object { $_.GetAttribute('fill') } | Sort-Object -Unique)
 Assert-True ($colors.Count -eq 4) 'Active-day quartiles should use all four green shades.'
 $darkDays = Get-Days $dark
-$lightValues = ($days | ForEach-Object { $_.GetAttribute('data-tokens') }) -join ','
-$darkValues = ($darkDays | ForEach-Object { $_.GetAttribute('data-tokens') }) -join ','
+$lightValues = ($days | ForEach-Object { $_.InnerText }) -join ','
+$darkValues = ($darkDays | ForEach-Object { $_.InnerText }) -join ','
 Assert-True ($lightValues -eq $darkValues) 'Themes must show identical data.'
 foreach ($dateString in @('2024-08-31', '2024-02-29', '2026-03-31', '2026-09-30', '2027-01-01')) {
     $end = [datetime]$dateString
@@ -44,12 +47,12 @@ foreach ($dateString in @('2024-08-31', '2024-02-29', '2026-03-31', '2026-09-30'
     $emptyDays = Get-Days $empty
     Assert-True ($emptyDays.Count -eq ($end - $start).Days + 1) "Incorrect interval at $dateString."
     Assert-True ($emptyDays[0].GetAttribute('data-date') -eq $start.ToString('yyyy-MM-dd')) "Incorrect boundary at $dateString."
-    Assert-True ($empty.OuterXml.Contains('0 tokens in the last 6 months')) 'Empty input should render a valid empty graph.'
+    Assert-True (@($emptyDays | Where-Object { $_.GetAttribute('fill') -ne '#eff2f5' }).Count -eq 0) 'Empty input should render an inactive graph.'
     foreach ($day in $emptyDays) {
         Assert-True (([int]$day.x + [int]$day.width) -lt [int]$empty.svg.width) 'Cell clipped horizontally.'
         Assert-True (([int]$day.y + [int]$day.height) -lt 251) 'Cell overlaps footer.'
     }
 }
 [xml]$single = New-CodexActivitySvg -Events @((New-Event '2026-09-07T00:00:00Z' 1)) -Now $now
-Assert-True ($single.OuterXml.Contains('1 tokens in the last 6 months')) 'Single active day should render without quantile errors.'
-Write-Host 'PASS: six-month totals, JST boundaries, leap years, month ends, empty/single-day data, color levels, theme parity, and grid bounds.'
+Assert-True (@((Get-Days $single) | Where-Object { $_.GetAttribute('fill') -ne '#eff2f5' }).Count -eq 1) 'Single active day should render without quantile errors.'
+Write-Host 'PASS: no exact usage disclosed, six-month filtering, JST boundaries, leap years, month ends, empty/single-day data, color levels, theme parity, and grid bounds.'
