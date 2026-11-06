@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="692" height="284" viewBox="0 0 692 284" role="img" aria-labelledby="activity-title activity-description">
   <title id="activity-title">Codex Token Activity - last six months</title>
-  <desc id="activity-description">Activity from May 3, 2026 - Nov 2, 2026 (JST). Each square represents one day; darker green means more activity in light mode, brighter green in dark mode.</desc>
+  <desc id="activity-description">Activity from May 7, 2026 - Nov 6, 2026 (JST). Each square represents one day; darker green means more activity in light mode, brighter green in dark mode.</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
     .summary { fill: #1f2328; font-size: 16px; font-weight: 600; }
@@ -19,10 +19,6 @@
   <text x="20" y="116" class="label">Mon</text>
   <text x="20" y="162" class="label">Wed</text>
   <text x="20" y="208" class="label">Fri</text>
-  <rect class="day" data-date="2026-05-03" x="52" y="80" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-05-03: No activity</title></rect>
-  <rect class="day" data-date="2026-05-04" x="52" y="103" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-05-04: No activity</title></rect>
-  <rect class="day" data-date="2026-05-05" x="52" y="126" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-05-05: No activity</title></rect>
-  <rect class="day" data-date="2026-05-06" x="52" y="149" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-05-06: No activity</title></rect>
   <rect class="day" data-date="2026-05-07" x="52" y="172" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-05-07: No activity</title></rect>
   <rect class="day" data-date="2026-05-08" x="52" y="195" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-05-08: No activity</title></rect>
   <rect class="day" data-date="2026-05-09" x="52" y="218" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-05-09: No activity</title></rect>
@@ -195,15 +191,19 @@
   <rect class="day" data-date="2026-10-23" x="604" y="195" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-23: No activity</title></rect>
   <rect class="day" data-date="2026-10-24" x="604" y="218" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-24: No activity</title></rect>
   <rect class="day" data-date="2026-10-25" x="627" y="80" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-25: No activity</title></rect>
-  <rect class="day" data-date="2026-10-26" x="627" y="103" width="18" height="18" rx="3" fill="#9be9a8"><title>2026-10-26: Low activity</title></rect>
-  <rect class="day" data-date="2026-10-27" x="627" y="126" width="18" height="18" rx="3" fill="#40c463"><title>2026-10-27: Moderate activity</title></rect>
+  <rect class="day" data-date="2026-10-26" x="627" y="103" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-26: No activity</title></rect>
+  <rect class="day" data-date="2026-10-27" x="627" y="126" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-27: No activity</title></rect>
   <rect class="day" data-date="2026-10-28" x="627" y="149" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-28: No activity</title></rect>
   <rect class="day" data-date="2026-10-29" x="627" y="172" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-29: No activity</title></rect>
   <rect class="day" data-date="2026-10-30" x="627" y="195" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-30: No activity</title></rect>
   <rect class="day" data-date="2026-10-31" x="627" y="218" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-10-31: No activity</title></rect>
   <rect class="day" data-date="2026-11-01" x="650" y="80" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-11-01: No activity</title></rect>
-  <rect class="day" data-date="2026-11-02" x="650" y="103" width="18" height="18" rx="3" fill="#30a14e"><title>2026-11-02: High activity</title></rect>
-  <text x="24" y="262" class="footer">May 3, 2026 - Nov 2, 2026 / JST</text>
+  <rect class="day" data-date="2026-11-02" x="650" y="103" width="18" height="18" rx="3" fill="#9be9a8"><title>2026-11-02: Low activity</title></rect>
+  <rect class="day" data-date="2026-11-03" x="650" y="126" width="18" height="18" rx="3" fill="#30a14e"><title>2026-11-03: High activity</title></rect>
+  <rect class="day" data-date="2026-11-04" x="650" y="149" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-11-04: No activity</title></rect>
+  <rect class="day" data-date="2026-11-05" x="650" y="172" width="18" height="18" rx="3" fill="#40c463"><title>2026-11-05: Moderate activity</title></rect>
+  <rect class="day" data-date="2026-11-06" x="650" y="195" width="18" height="18" rx="3" fill="#eff2f5"><title>2026-11-06: No activity</title></rect>
+  <text x="24" y="262" class="footer">May 7, 2026 - Nov 6, 2026 / JST</text>
   <text x="539" y="262" text-anchor="end" class="footer">Less</text>
   <rect x="549" y="251" width="13" height="13" rx="2" class="day" fill="#eff2f5"/>
   <rect x="566" y="251" width="13" height="13" rx="2" class="day" fill="#9be9a8"/>
